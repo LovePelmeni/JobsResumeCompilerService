@@ -2,4 +2,6 @@ from django.utils import deprecation
 
 
 class SetAuthHeaderMiddleware(deprecation.MiddlewareMixin):
-    pass
+
+    def process_request(self, request):
+        pass

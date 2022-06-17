@@ -22,5 +22,13 @@ class CVPDFRenderer(renderers.BaseRenderer):
             raise rest_framework.exceptions.APIException(
             )
 
-class CVRenderer():
-    pass
+class CVRenderer(renderers.BaseRenderer):
+
+    accepted_media_types = ('application/json', 'application/xml', 'text/plain', 'application/www-form-urlencoded')
+
+    def render(self, data, accepted_media_type=None, renderer_context=None):
+        pass
+
+
+
+

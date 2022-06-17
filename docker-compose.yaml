@@ -50,19 +50,28 @@ services:
     image: graphile/postgraphile
     networks:
       - global_jobs_app_network
+    environment:
+      - DATABASE_URL=postgresql://postgres:Kirill@database:5436/jobs_db
     depends_on:
       - database
+    healthcheck:
+      test: ["CMD"]
+      retries: 5
+      interval: 10s
+      timeout: 10s
 
 networks:
   global_jobs_app_network:
     external: false
     enable_ipv6: true
     driver: bridge
+    driver_opts:
+      com.docker.network.enable_ipv6: "true"
     ipam:
-      driver: bridge
+      driver: default
       config:
-        gateway:
-        subnet: 19.23.25.01/20
+        - subnet: 172.28.0.1/20
+          gateway: 172.28.0.2
 
     name: global_jods_app_network
     internal: true

@@ -1,3 +1,5 @@
+import docker
+
 class ClusterBuildFailed(Exception):
     pass
 
@@ -24,18 +26,29 @@ class DockerSwarmContainer(object):
 
 class ClusterCredentials(object):
 
-    def __init__(self, cluster_credentials: typing.Dict[str, typing.Any]):
+    def __init__(self, cluster_credentials: typing.Dict[str, typing.Any],
+    return_content_type: typing.Literal["xml", "json"]):
         self.cluster_credentials = cluster_credentials
+        self.return_content_type = return_content_type
+
+    def __call__(self, *args, **kwargs):
+        pass
+
+    def validate(self):
+        pass
 
     def json(self) -> str:
+        """
+        / * Returns Cluster Configuration info as JSON object.
+        """
         pass
 
     def xml(self) -> str:
         """
-        / * Returns Cluster Configuration Info converted to XML
-        :return:
+        / * Returns Cluster Configuration Info converted to XML.
         """
         pass
+
 
 class DockerSwarmClusterDeployTool(object):
 

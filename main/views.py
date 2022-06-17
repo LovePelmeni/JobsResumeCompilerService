@@ -19,10 +19,12 @@ class ResumeGenericViewSet(viewsets.ModelViewSet):
     @decorators.action(methods=[], detail=False)
     def create(self, request, **kwargs):
         pass
+
     @transaction.atomic
     @decorators.action(methods=[], detail=False)
     def update(self, request, **kwargs):
         pass
+
     @transaction.atomic
     @decorators.action(methods=[], detail=False)
     def destroy(self, request, **kwargs):
@@ -35,6 +37,9 @@ class ResumeGenericViewSet(viewsets.ModelViewSet):
     @decorators.action(methods=[], detail=False)
     def list(self, request, **kwargs):
         pass
+
+
+
 
 class UploadedCVAPIView(views.APIView):
 
@@ -65,12 +70,45 @@ class UploadedCVAPIView(views.APIView):
 
 
 class CheckPremiumPermission(views.APIView):
-    pass
+
+    permission_classes = (rest_perms.IsAuthenticated,)
+    authentication_classes = (authentication.JWTAuthenticationClass,)
+
+    def get(self, request):
+        customer = models.Customer.objects.get(
+        id=request.query_params.get('customer_id'))
+        return django.http.HttpResponse(
+        status=200, content={'premuim': customer.has_premium})
+
 
 
 class CustomerAPIView(views.APIView):
     pass
 
 
+
+import django.core.serializers.json
 class SuggestionsAPIView(views.APIView):
-    pass
+
+    permission_classes = (rest_perms.AllowAny,)
+
+    @decorators.action(methods=['get'], detail=True)
+    @decorators.permission_classes([rest_perms.IsAuthenticated,])
+    @decorators.authentication_classes([authentication.JWTAuthenticationClass,])
+    def retrieve(self, request,):
+        pass
+
+    @decorators.action(methods=['get'], detail=False)
+    def list(self, request):
+        from django.db import models as db_models
+        customer = models.Customer.objects.get(id=request.query_params.get('customer_id'))
+        queryset = models.Resume.objects.filter(premuim=customer.has_premium,
+        **db_models.Q(created_at__gte=datetime.datetime.now().days - 7)
+        | db_models.Q()).order_by(db_models.F("rate").desc())
+        return django.http.HttpResponse(status=200, content=json.dumps(list(queryset),
+        cls=django.core.serializers.json.DjangoJSONEncoder))
+
+
+
+
+

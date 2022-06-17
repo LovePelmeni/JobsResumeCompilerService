@@ -49,7 +49,16 @@ class CreditCardField(models.CharField):
 
 
 class CustomerQueryset(django.db.models.QuerySet):
-    pass
+
+    def create(self, **kwargs):
+        pass
+
+    def update(self, **kwargs):
+        pass
+
+    def delete(self):
+        pass
+
 
 class CustomerManager(models.manager.BaseManager.from_queryset(CustomerQueryset)):
     pass
@@ -57,6 +66,7 @@ class CustomerManager(models.manager.BaseManager.from_queryset(CustomerQueryset)
 
 class ResumeQueryset(django.db.models.QuerySet):
     pass
+
 
 class ResumeManager(django.db.models.manager.BaseManager.from_queryset(ResumeQueryset)):
     pass
@@ -68,6 +78,7 @@ rate_choices = [
 
 class Topic(models.Model):
 
+    objects = models.Manager()
     name = models.CharField(verbose_name=_("Topic's Name"), null=False, max_length=100)
     description = models.TextField(verbose_name=_("Description"), null=False, max_length=300)
 
@@ -102,13 +113,17 @@ class Customer(AbstractBaseUser):
     credit_card = CreditCardField(verbose_name=_("Credit Card"), null=True, validators=[CreditCardValidator,])
     resumes = models.ForeignKey(verbose_name=_("Resumes"), null=True, on_delete=models.CASCADE, to=Resume)
     created_at = models.DateField(verbose_name=_("Created At"), null=False, auto_now_add=True)
+    has_premuim = models.BooleanField(verbose_name=_("Has Premium"), default=False)
 
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email', 'password']
+
     def __str__(self):
         return self.username
 
-
+    @property
+    def get_created_at(self):
+        return self.created_at
 
 
 
