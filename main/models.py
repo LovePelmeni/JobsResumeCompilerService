@@ -6,6 +6,29 @@ from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.utils.deconstruct import deconstructible
 
 
+@deconstructible(path='main.models.HTMLContentValidator')
+class HTMLContentValidator(object):
+
+    def __init__(self, value: str):
+        self.value = value
+
+    def __call__(self, *args, **kwargs):
+        pass
+
+    def validate(self):
+        pass
+
+
+class HTMLField(models.CharField):
+
+    def __init__(self, **kwargs):
+        super(HTMLField, self).__init__(**kwargs)
+        self.max_length = kwargs.get('max_length')
+
+    def validate(self, value, model_instance):
+        pass
+
+
 
 @deconstructible(path='main.models.CreditCardValidator')
 class CreditCardValidator(object):
@@ -48,32 +71,14 @@ class CreditCardField(models.CharField):
         pass
 
 
-class CustomerQueryset(django.db.models.QuerySet):
-
-    def create(self, **kwargs):
-        pass
-
-    def update(self, **kwargs):
-        pass
-
-    def delete(self):
-        pass
-
-
-class CustomerManager(models.manager.BaseManager.from_queryset(CustomerQueryset)):
-    pass
-
-
 class ResumeQueryset(django.db.models.QuerySet):
     pass
-
 
 class ResumeManager(django.db.models.manager.BaseManager.from_queryset(ResumeQueryset)):
     pass
 
-
 rate_choices = [
-
+    (str(number), '%s' % number) for number in range(1, 6)
 ]
 
 class Topic(models.Model):
@@ -90,9 +95,16 @@ class Resume(models.Model):
     objects = ResumeManager()
 
     resume_name = models.CharField(verbose_name=_("Resume Name"), max_length=100, null=False)
+    content = HTMLField(verbose_name=_("Image PDF Content Of the Resume"), max_length=10000, null=False)
     topics = models.ForeignKey(verbose_name=_("Topics"), to=Topic, on_delete=models.PROTECT)
     created_at = models.DateField(verbose_name=_("Created At"), auto_now_add=True, max_length=100)
     rate = models.IntegerField(choices=rate_choices, verbose_name=_("Rate"), null=False)
+    private = models.BooleanField(verbose_name=_("Private."), default=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields='created_at', name='created_at')
+        ]
 
     def __str__(self):
         return self.resume_name
@@ -103,9 +115,9 @@ class Resume(models.Model):
 
 class Customer(AbstractBaseUser):
 
-    objects = CustomerManager()
+    objects = BaseUserManager()
 
-    username = models.CharField(verbose_name=_("Username"), null=False, unique=True, max_length=100)
+    username = models.CharField(verbose_name=_("Username"), null=False, unique=True, editable=False, max_length=100)
     password = models.CharField(verbose_name=_("Password"), null=False, max_length=100)
     email = models.CharField(verbose_name=_("Email"), null=False, max_length=100)
 
@@ -118,12 +130,20 @@ class Customer(AbstractBaseUser):
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email', 'password']
 
+    class Meta:
+        indexes = [
+            models.Index(fields=('created_at'), name='created_at_pkey'),
+            models.Index(fields=('username'), name='username_pkey')
+        ]
+
     def __str__(self):
         return self.username
 
     @property
     def get_created_at(self):
         return self.created_at
+
+
 
 
 

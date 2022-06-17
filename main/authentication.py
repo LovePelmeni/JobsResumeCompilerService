@@ -22,4 +22,3 @@ class JWTAuthenticationClass(authentication.BaseAuthentication):
 
 
 
-

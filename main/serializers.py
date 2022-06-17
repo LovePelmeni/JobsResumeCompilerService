@@ -3,14 +3,14 @@ from django.utils.translation import gettext_lazy
 from . import models
 from django.apps.registry import get_models
 from django.core.serializers.json import DjangoJSONEncoder
-import django.core.exceptions
+import django.core.exceptions, django.apps
 
 
 class ModelMultipleChoiceField(serializers.MultipleChoiceField):
 
     def __init__(self, **kwargs):
         super(ModelMultipleChoiceField, self).__init__(**kwargs)
-        self.model = (model for model in get_models() if
+        self.model = (model for model in django.apps.apps.get_models() if
             model.__class__.__name__ == kwargs.get('model'))[0].__class__.__name__
 
     def to_representation(self, value):

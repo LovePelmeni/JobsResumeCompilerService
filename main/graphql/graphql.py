@@ -1,6 +1,7 @@
+import graphene
 import graphql
 
-class ResumeGraphqlEndPoint(object):
+class ResumeGraphqlEndPoint(graphene.ObjectType):
     pass
 
 
