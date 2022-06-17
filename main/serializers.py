@@ -1,9 +1,33 @@
 from rest_framework import serializers
-from django.utils.translation import gettext_lazy
+from django.utils.translation import gettext_lazy as _
 from . import models
 from django.apps.registry import get_models
 from django.core.serializers.json import DjangoJSONEncoder
 import django.core.exceptions, django.apps
+
+
+
+class HyperLinkedSlugRelatedTopicField(serializers.HyperlinkedModelSerializer):
+
+    def __init__(self, **kwargs):
+        super(HyperLinkedSlugRelatedTopicField, self).__init__(**kwargs)
+
+    def validate(self, attrs):
+        return super(HyperLinkedSlugRelatedTopicField, self).validate(attrs)
+
+    def prepare_linked_topics(self, topics):
+        updated_topics = []
+        topic_url = 'http://' + settings.APPLICATION_HOST + 'topic/retrieve/?topic_id=%s'
+        for topic in topics:
+            topic.id = topic_url % topic.id
+            updated_topics.append(topic)
+        return updated_topics
+
+    def validated_data(self) -> typing.Dict[str, str]:
+        validated_data = {}
+        topics = self.prepare_linked_topics(topics=self.initial_data['topics'])
+        validated_data['topics'] = topics
+        return validated_data
 
 
 class ModelMultipleChoiceField(serializers.MultipleChoiceField):
@@ -33,15 +57,27 @@ class ModelMultipleChoiceField(serializers.MultipleChoiceField):
             'Value is not JSON Serializable.')
 
 
-class ResumeSerializer(serializers.ModelSerializer):
+class ResumeCreateSerializer(serializers.ModelSerializer):
 
-    resume_name = serializers.CharField(label=_("Resume Name"))
+    resume_name = serializers.CharField(label=_("Resume Name"), required=True)
     topics = ModelMultipleChoiceField(label=_("Resume Name"), choices=models.Topic.objects.all())
     rate = serializers.CharField(label=_("Resume Name"), choices=getattr(models, 'rate_choices'))
 
     class Meta:
         model = models.Resume
         fields = ('resume_name', 'topics', 'rate')
+
+class ResumeGetSerializer(serializers.HyperlinkedModelSerializer):
+
+    resume_name = serializers.CharField(label=_("Resume Name"), required=False)
+    topics = HyperLinkedSlugRelatedTopicField(label=_("Topics"), required=False)
+    rate = serializers.ReadOnlyField(label=_("Rate"), required=False)
+    created_at = serializers.ReadOnlyField(label=_("Created At"), required=False)
+
+    class Meta:
+        model = models.Resume
+        fields = ('resume_name', 'topics', 'rate')
+
 
 class CustomerSerializer(serializers.ModelSerializer):
 
@@ -57,7 +93,7 @@ class CustomerUpdateSerializer(CustomerSerializer):
 
     def __init__(self, **kwargs):
         super(CustomerSerializer, self).__init__(**kwargs)
-        del self.fields['username']
+        self.fields.update({'username': serializers.ReadOnlyField(label=_("Username"), required=False)})
 
         for field in self.get_fields():
             if getattr(field, 'required'):
@@ -67,3 +103,12 @@ class CustomerUpdateSerializer(CustomerSerializer):
         if not value in models.Customer.objects.values_list('email', flat=True):
             return value
         raise django.core.exceptions.ValidationError(message='Invalid Email')
+
+
+class TopicSerializer(serializers.HyperlinkedModelSerializer):
+
+    class Meta:
+        model = models.Topic
+        fields = '__all__'
+
+

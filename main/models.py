@@ -6,16 +6,9 @@ from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.utils.deconstruct import deconstructible
 
 
-@deconstructible(path='main.models.HTMLContentValidator')
-class HTMLContentValidator(object):
+class HTMLContentValidator(django.core.validators.BaseValidator):
 
-    def __init__(self, value: str):
-        self.value = value
-
-    def __call__(self, *args, **kwargs):
-        pass
-
-    def validate(self):
+    def __call__(self, value) -> typing.Union[str, Exception]:
         pass
 
 
@@ -26,37 +19,25 @@ class HTMLField(models.CharField):
         self.max_length = kwargs.get('max_length')
 
     def validate(self, value, model_instance):
-        pass
+        return super().validate(value, model_instance)
 
 
+import django.core.validators
 
-@deconstructible(path='main.models.CreditCardValidator')
-class CreditCardValidator(object):
+class CreditCardValidator(django.core.validators.BaseValidator):
 
-    def __init__(self, value):
-        self.value = value
-
-    def __call__(self, *args, **kwargs):
-        self.validate()
-
-    def validate(self):
+    def __call__(self, value):
         import re, django.core.exceptions
-        if not re.match(pattern=self.match_pattern, string=self.value):
+        if not re.match(pattern=self.match_pattern, string=value):
             raise django.core.exceptions.ValidationError(message='Invalid Credit Card Number.')
-        return self.value
-
-    def __eq__(self, other):
-        return (
-        self.validate == other.validate
-        and self.value == other.value
-        )
-
+        return value
 
 class CreditCardField(models.CharField):
 
     def __init__(self, **kwargs):
         super(CreditCardField, self).__init__(**kwargs)
         self.max_length = 12
+        self.validators.append(CreditCardValidator)
 
     def to_python(self, value):
         return value
@@ -64,11 +45,8 @@ class CreditCardField(models.CharField):
     def db_type(self, connection):
         return 'VARCHAR(%s)' % self.max_length
 
-    def clean(self, value, model_instance):
-        pass
-
     def validate(self, value, model_instance):
-        pass
+        return super().validate(value, model_instance)
 
 
 class ResumeQueryset(django.db.models.QuerySet):
@@ -123,6 +101,7 @@ class Customer(AbstractBaseUser):
 
     balance = models.IntegerField(verbose_name=_("Balance"), null=False)
     credit_card = CreditCardField(verbose_name=_("Credit Card"), null=True, validators=[CreditCardValidator,])
+
     resumes = models.ForeignKey(verbose_name=_("Resumes"), null=True, on_delete=models.CASCADE, to=Resume)
     created_at = models.DateField(verbose_name=_("Created At"), null=False, auto_now_add=True)
     has_premuim = models.BooleanField(verbose_name=_("Has Premium"), default=False)

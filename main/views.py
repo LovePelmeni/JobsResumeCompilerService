@@ -26,7 +26,7 @@ class ResumeGenericViewSet(viewsets.ModelViewSet):
     def create(self, request, **kwargs):
         try:
             customer = models.Customer.objects.get(id=request.query_params.get('customer_id'))
-            serializer = serializers.ResumeSerializer(request.data, many=False)
+            serializer = serializers.ResumeCreateSerializer(request.data, many=False)
             if serializer.is_valid(raise_exception=True):
                 customer.resumes.create(**serializer.validated_data)
             return django.http.HttpResponse(status=200)
@@ -44,17 +44,6 @@ class ResumeGenericViewSet(viewsets.ModelViewSet):
             return django.http.HttpResponse(status=200)
         except(django.db.utils.IntegrityError, django.db.utils.DataError):
             raise NotImplementedError
-
-
-    @decorators.action(methods=['get'], detail=False)
-    def retrieve(self, request, **kwargs):
-        pass
-
-    @decorators.action(methods=['get'], detail=False)
-    def list(self, request, **kwargs):
-        pass
-
-
 
 
 class UploadedCVAPIView(views.APIView):
@@ -85,12 +74,12 @@ class CustomerAPIView(views.APIView):
     pass
 
 
-
 class CustomerResumesAPIView(viewsets.ModelViewSet):
 
     queryset = models.Resume.objects.all()
     permission_classes = (permissions.IsAuthenticated,)
     authentication_classes = (authentication.JWTAuthenticationClass,)
+    serializer_class = serializers.ResumeGetSerializer
 
 
     def filter_queryset(self, queryset):
@@ -105,16 +94,18 @@ class CustomerResumesAPIView(viewsets.ModelViewSet):
     def retrieve(self, request, *args, **kwargs):
         try:
             resume = self.get_queryset().get(id=request.query_params.get('resume_id')).values()
-            return django.http.HttpResponse(status=200, content=json.dumps({'resume': list(resume)}))
+            return django.http.HttpResponse(status=200, content=json.dumps({'resume': list(resume)},
+            cls=django.core.serializers.json.DjangoJSONEncoder
+            ))
         except(django.core.exceptions.ObjectDoesNotExist,):
             return django.http.HttpResponseNotFound()
 
 
     @decorators.action(methods=['get'], detail=False)
     def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset().values()
+        queryset = self.serializer_class(self.get_queryset(), many=True)
         return django.http.HttpResponse(status=200,
-        content=json.dumps({'resumes': list(queryset)}))
+        content=json.dumps({'resumes': queryset.validated_data}))
 
 
 import django.core.serializers.json
@@ -147,6 +138,30 @@ class ResumePublicSuggestionsAPIView(viewsets.ReadOnlyModelViewSet):
         return django.http.HttpResponse(status=200, content=json.dumps({'resumes': list(queryset)},
         cls=django.core.serializers.json.DjangoJSONEncoder))
 
+
+class TopicViewSet(viewsets.ModelViewSet):
+
+    queryset = models.Topic.objects.all()
+    serializer_class = serializers.TopicSerializer
+    permission_classes = (rest_perms.IsAuthenticated,)
+
+    def filter_queryset(self, queryset):
+        resume = models.Resume.objects.get(id=self.request.query_params.get('resume_id'))
+        return queryset.filter(resume=resume).select_related('topic')
+
+    def get_queryset(self):
+        return self.filter_queryset(self.queryset)
+
+    @decorators.action(methods=['get'], detail=False)
+    def retrieve(self, request, *args, **kwargs):
+        topic = self.serializer_class(self.get_queryset().get(
+        id=request.query_params.get('topic_id')), many=False)
+        return django.http.HttpResponse(json.dumps({'topic': topic.data}))
+
+    @decorators.action(methods=['get'], detail=False)
+    def list(self, request, *args, **kwargs):
+        queryset = self.serializer_class(self.get_queryset(), many=True)
+        return django.http.HttpResponse(json.dumps({'queryset': queryset.data}))
 
 
 

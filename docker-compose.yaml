@@ -19,7 +19,7 @@ services:
     ports:
       - 8000:8000
     healthcheck:
-      test: ["CMD", "-f", "http://localhost:8000"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000"]
       retries: 5
       timeout: 10s
       interval: 10s
@@ -55,7 +55,7 @@ services:
     depends_on:
       - database
     healthcheck:
-      test: ["CMD"]
+      test: ["CMD", "curl", "-f", "http://localhost:5000"]
       retries: 5
       interval: 10s
       timeout: 10s

@@ -9,6 +9,7 @@ resume_urlpatterns = [
 
     path('resume/list/', views.ResumeGenericViewSet.as_view({'get': 'list'})),
     path('resume/retrieve/', views.ResumeGenericViewSet.as_view({'get': 'retrieve'})),
+
     path('resume/create/', views.ResumeGenericViewSet.as_view({'post': 'create'})),
     path('resume/delete/', views.ResumeGenericViewSet.as_view({'delete': 'destroy'})),
 
@@ -20,6 +21,16 @@ resume_urlpatterns = [
 customer_urlpatterns = [
 
     path('customer/', views.CustomerAPIView.as_view()),
+
+]
+
+topic_urlpatterns = [
+
+    path('get/topic/', views.TopicViewSet.as_view({'get': 'retrieve'})),
+    path('get/topics/', views.TopicViewSet.as_view({'get': 'list'})),
+
+    path('update/topic/', views.TopicViewSet.as_view({'put': 'update'})),
+    path('create/topic/', views.TopicViewSet.as_view({'post': 'create'}))
 
 ]
 

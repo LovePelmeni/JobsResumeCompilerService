@@ -12,13 +12,15 @@ class RendererMixin(object):
    ('application/json', 'application/xml', 'text/plain', 'application/www-form-urlencoded')
 
     def __call__(self, *args, **kwargs):
-        self.check_content_valid()
+        self.check_content_valid(**kwargs)
         return self.render(**kwargs)
 
-    def render(self, data, accepted_types=None, renderer_context=None) -> bytes:
+    def render(self, data, cv_name: str, accepted_types=None, renderer_context=None) -> bytes:
         """/ * This method suppose to be overridden"""
 
-    def check_content_valid(self):
+    def check_content_valid(self, data, renderer_context, accepted_media_type):
+        if not isinstance(data, str):
+            raise RendererError(reason='Invalid Type Of Content. Required Str. Got %s' % type(data))
         if not isinstance(renderer_context, dict) or not accepted_media_type in self.accepted_media_types:
             message = 'Accepted Type not allowed or invalid renderer context.'
             raise RendererError(reason=message)
@@ -26,9 +28,16 @@ class RendererMixin(object):
 
 class CVPDFRenderer(RendererMixin, renderers.BaseRenderer):
 
-    def render(self, data, accepted_media_type=None, renderer_context=None):
+    def render_to_pdf(self, content: str, cv_name: str) -> typing.Type['TextIO']:
+        with open('%s.pdf' % cv_name) as pdf_cv_file:
+            pdf_cv_file.write(content)
+        pdf_cv_file.close()
+        return pdf_cv_file
+
+    def render(self, data, cv_name: str, accepted_media_type=None, renderer_context=None):
         try:
-            pass
+            content = self.render_to_pdf(content=data, cv_name=cv_name)
+            return content
         except(rest_framework.exceptions.APIException) as exception:
             logger.error("Renderer Exception: %s" % exception)
             raise rest_framework.exceptions.APIException(
@@ -36,12 +45,13 @@ class CVPDFRenderer(RendererMixin, renderers.BaseRenderer):
 
 class CVWordRenderer(RendererMixin, renderers.BaseRenderer):
 
-    def render(self, data, accepted_media_type=None, renderer_context=None):
+    def render_to_word_document(self, content: str):
+        pass
+
+    def render(self, data, cv_name: str, accepted_media_type=None, renderer_context=None):
         try:
-            pass
+            content = self.render_to_word_document(content=data)
+            return content
         except(rest_framework.exceptions.APIException) as exception:
             logger.error('Word Renderer Exception: %s' % exception)
             raise rest_framework.exceptions.APIException()
-
-
-

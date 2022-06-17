@@ -4,18 +4,9 @@ RUN adduser -disabled-password --gecos '' $USER
 
 USER linux_user
 
-RUN apt-get update && \ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add - \
-apt-get install apt-transport-https ca-certificates curl software-properties-common && \
-add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" && \
-apt-get update && \ apt-get install docker.ce docker-compose -y && usermod -aG docker $USER
+RUN apt-get update && apt-get upgrade -y && apt-get clean
+RUN apt-get install -y curl python3.7 python3.7-dev python.3.7-distutils
 
-RUN docker -v
-
-RUN mkdir ./app/
-RUN cd ./app/
-RUN nano Dockerfile
-
-FROM python:3.8.13-buster
 MAINTAINER Kirill Klimushin, email: kirklimushin@gmail.com
 
 WORKDIR /app/

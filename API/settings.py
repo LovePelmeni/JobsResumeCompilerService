@@ -51,14 +51,19 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
+
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
 ]
 
 ROOT_URLCONF = 'API.urls'
@@ -85,7 +90,11 @@ AUTH_USER_MODEL = 'main.Customer'
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
+APPLICATION_HOST = 'application'
+
+
 if DEBUG:
+
 
     CORS_ALLOWED_ALL_ORIGINS = True
     DATABASES = {
@@ -99,15 +108,32 @@ if DEBUG:
         }
     }
 else:
-    CORS_ALLOWED_ALL_ORIGINS = True
+    CORS_ALLOWED_ORIGINS = [
+        'http://%s:8000' % APPLICATION_HOST
+    ]
+    CORS_CSRF_TRUSTED_ORIGINS = [
+        'http://%s:8000' % APPLICATION_HOST
+    ]
+    CORS_ALLOWED_HEADERS = [
+        "*"
+    ]
+    CORS_ALLOWED_METHODS = [
+        'GET',
+        'POST',
+        'PUT',
+        'OPTIONS',
+        'TRACE',
+        'DELETE'
+    ]
+
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': 'jobs_db',
-            'USER': 'postgres',
-            'PASSWORD': 'Kirill',
-            'HOST': 'localhost',
-            'PORT': 5434
+            'NAME': os.environ.get("POSTGRES_DB"),
+            'USER':  os.environ.get("POSTGRES_USER"),
+            'PASSWORD': os.environ.get("POSTGRES_PASSWORD"),
+            'HOST': os.environ.get("POSTGRES_HOST"),
+            'PORT': os.environ.get('POSTGRES_PORT')
         }
     }
 
