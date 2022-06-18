@@ -1,4 +1,6 @@
+import contextlib
 import docker
+
 
 class ClusterBuildFailed(Exception):
     pass
@@ -41,13 +43,14 @@ class ClusterCredentials(object):
         """
         / * Returns Cluster Configuration info as JSON object.
         """
-        pass
+        import json
+        return json.dumps(str())
 
     def xml(self) -> str:
         """
         / * Returns Cluster Configuration Info converted to XML.
         """
-        pass
+        return str()
 
 
 class DockerSwarmClusterDeployTool(object):
@@ -69,3 +72,8 @@ class DockerSwarmClusterDeployTool(object):
 
     def __call__(self, *args, **kwargs):
         return self.create_cluster()
+
+
+@contextlib.contextmanager
+def get_cluster_instance():
+    yield DockerSwarmClusterDeployTool

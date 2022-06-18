@@ -1,3 +1,4 @@
+import django.core.exceptions
 from django.utils import deprecation
 
 
@@ -10,3 +11,14 @@ class SetAuthHeaderMiddleware(deprecation.MiddlewareMixin):
             return None
         except(KeyError,):
             return None
+
+
+class BlockedMiddleware(deprecation.MiddlewareMixin):
+
+    def process_request(self, request):
+        try:
+            if request.user.is_blocked:
+                return django.http.HttpResponseForbidden()
+        except(django.core.exceptions.RequestAborted,):
+            return None
+

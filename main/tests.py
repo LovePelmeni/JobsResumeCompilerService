@@ -6,7 +6,7 @@ import unittest.mock
 class ResumeRendererTestCase(unittest.TestCase):
 
     def mocked_cv_content(self):
-        return """<></><></>"""
+        return """<body><h1>Correct Content</h1></body>"""
 
     def mocked_fake_cv_content(self):
         return """Invalid CV Content File"""
@@ -28,7 +28,37 @@ class ResumeRendererTestCase(unittest.TestCase):
 
 
 class ResumeSuggestionsTestCase(unittest.TestCase):
-    pass
 
+    def test_get_suggestions(self):
+        pass
+
+class CustomerControllerTestCase(unittest.TestCase):
+
+    def setUp(self) -> None:
+        pass
+
+    def test_customer_create(self):
+        pass
+
+    def test_customer_update(self):
+        pass
+
+    def test_customer_delete(self):
+        pass
+
+
+class TopicControllersTestCase(unittest.TestCase):
+
+    def setUp(self) -> None:
+        pass
+
+    def test_topic_create(self):
+        pass
+
+    def test_topic_update(self):
+        pass
+
+    def test_topic_delete(self):
+        pass
 
 

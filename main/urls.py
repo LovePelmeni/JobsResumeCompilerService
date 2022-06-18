@@ -5,10 +5,7 @@ import drf_yasg.views, drf_yasg.openapi
 from rest_framework import permissions
 
 
-
 urlpatterns = []
-
-
 
 resume_urlpatterns = [
 
@@ -58,6 +55,9 @@ openapi_urlpatterns = [
 
 urlpatterns += resume_urlpatterns
 urlpatterns += openapi_urlpatterns
+urlpatterns += customer_urlpatterns
+urlpatterns += topic_urlpatterns
+
 
 
 

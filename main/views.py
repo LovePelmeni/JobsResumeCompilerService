@@ -1,3 +1,5 @@
+import contextlib
+
 import rest_framework.exceptions
 from django.shortcuts import render
 
@@ -196,5 +198,7 @@ class ResumesCatalogSuggestionsAPIView(viewsets.ModelViewSet):
         return django.http.HttpResponse(status=status.HTTP_200_OK,
         content=json.dumps({'queryset': list(query.values())},
         cls=django.core.serializers.json.DjangoJSONEncoder))
+
+
 
 

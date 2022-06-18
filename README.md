@@ -6,11 +6,20 @@
 * ### [Redoc Docs]("http://localhost:8000/redoc/)
 
 ---
+# PROJECT IS CURRENTLY IN DEVELOPMENT PROCESS.
 
+---
 #### Goal of the Project: 
 This Project is developing to let people to create their own custom resumes and increase their chances to get applied.
 
 ## Technologies 
+    
+Frameworks: Django.
+
+Databases: PostgresSQL 
+
+External Services: GraphQL 
+
 
 
 ## Usage 

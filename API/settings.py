@@ -64,6 +64,8 @@ MIDDLEWARE = [
 
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'main.middlewares.BlockedMiddleware',
+    'main.middlewares.SetAuthHeaderMiddleware'
 
 ]
 
@@ -96,7 +98,6 @@ APPLICATION_HOST = 'application'
 
 if DEBUG:
 
-
     CORS_ALLOWED_ALL_ORIGINS = True
     DATABASES = {
         'default': {
@@ -109,6 +110,7 @@ if DEBUG:
         }
     }
 else:
+
     CORS_ALLOWED_ORIGINS = [
         'http://%s:8000' % APPLICATION_HOST
     ]

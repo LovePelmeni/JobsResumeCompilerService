@@ -29,6 +29,8 @@ class RendererMixin(object):
 
 class CVPDFRenderer(RendererMixin, renderers.BaseRenderer):
 
+    accepted_media_types = ()
+
     def render_to_pdf(self, content: str, cv_name: str) -> typing.Type['TextIO']:
         with open('%s.pdf' % cv_name) as pdf_cv_file:
             pdf_cv_file.write(content)
@@ -46,6 +48,8 @@ class CVPDFRenderer(RendererMixin, renderers.BaseRenderer):
 
 class CVWordRenderer(RendererMixin, renderers.BaseRenderer):
 
+    accepted_media_types = ()
+
     def render_to_word_document(self, content: str):
         pass
 
@@ -56,4 +60,5 @@ class CVWordRenderer(RendererMixin, renderers.BaseRenderer):
         except(rest_framework.exceptions.APIException) as exception:
             logger.error('Word Renderer Exception: %s' % exception)
             raise rest_framework.exceptions.APIException()
+
 

@@ -106,7 +106,6 @@ class CustomerUpdateSerializer(CustomerSerializer):
         raise django.core.exceptions.ValidationError(message='Invalid Email')
 
 
-
 class TopicSerializer(serializers.ModelSerializer):
 
     class Meta:
