@@ -10,5 +10,3 @@ class SetAuthHeaderMiddleware(deprecation.MiddlewareMixin):
             return None
         except(KeyError,):
             return None
-
-

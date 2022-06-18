@@ -1,9 +1,14 @@
 from . import views
 from django.urls import path
+
 import drf_yasg.views, drf_yasg.openapi
 from rest_framework import permissions
 
+
+
 urlpatterns = []
+
+
 
 resume_urlpatterns = [
 

@@ -4,13 +4,12 @@ from django.utils.translation import gettext_lazy as _
 # Create your models here.
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.utils.deconstruct import deconstructible
-
+import typing
 
 class HTMLContentValidator(django.core.validators.BaseValidator):
 
     def __call__(self, value) -> typing.Union[str, Exception]:
         pass
-
 
 class HTMLField(models.CharField):
 
@@ -73,7 +72,7 @@ class Resume(models.Model):
     objects = ResumeManager()
 
     resume_name = models.CharField(verbose_name=_("Resume Name"), max_length=100, null=False)
-    content = HTMLField(verbose_name=_("Image PDF Content Of the Resume"), max_length=10000, null=False)
+    content = HTMLField(verbose_name=_("Image PDF Content Of the Resume"), max_length=10000, null=False, default='Empty')
     topics = models.ForeignKey(verbose_name=_("Topics"), to=Topic, on_delete=models.PROTECT)
     created_at = models.DateField(verbose_name=_("Created At"), auto_now_add=True, max_length=100)
     rate = models.IntegerField(choices=rate_choices, verbose_name=_("Rate"), null=False)
@@ -81,7 +80,7 @@ class Resume(models.Model):
 
     class Meta:
         indexes = [
-            models.Index(fields='created_at', name='created_at')
+            models.Index(fields=['created_at',], name='created_at')
         ]
 
     def __str__(self):
@@ -105,14 +104,16 @@ class Customer(AbstractBaseUser):
     resumes = models.ForeignKey(verbose_name=_("Resumes"), null=True, on_delete=models.CASCADE, to=Resume)
     created_at = models.DateField(verbose_name=_("Created At"), null=False, auto_now_add=True)
     has_premuim = models.BooleanField(verbose_name=_("Has Premium"), default=False)
+    liked_resumes = models.ManyToManyField(verbose_name=_("Like Resumes"), related_name='liked_customers',
+    default=None, null=True, to=Resume)
 
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email', 'password']
 
     class Meta:
         indexes = [
-            models.Index(fields=('created_at'), name='created_at_pkey'),
-            models.Index(fields=('username'), name='username_pkey')
+            models.Index(fields=('created_at',), name='created_at_pkey'),
+            models.Index(fields=('username',), name='username_pkey')
         ]
 
     def __str__(self):

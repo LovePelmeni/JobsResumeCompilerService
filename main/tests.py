@@ -5,22 +5,30 @@ import unittest.mock
 
 class ResumeRendererTestCase(unittest.TestCase):
 
-
     def mocked_cv_content(self):
-        return """"""
+        return """<></><></>"""
 
     def mocked_fake_cv_content(self):
-        pass
+        return """Invalid CV Content File"""
 
     @unittest.mock.patch('main.tests.ResumeRendererTestCase.mocked_cv_content')
     def test_render_to_pdf(self, mocked_cv_content):
-        pass
+        from . import renderers
+        renderer = renderers.CVPDFRenderer()
+        pdf_resume = renderer.render(mocked_cv_content, cv_name='Test CV')
+        self.assertIsInstance(pdf_resume, typing.Type['TextIO'], msg='Invalid Content Has been Returned.')
+
 
     @unittest.mock.patch('main.tests.ResumeRendererTestCase.mocked_fake_cv_content')
     def test_render_to_pdf_fail(self, fake_cv_content):
-        pass
+        from . import renderers
+        with self.assertRaises(expected_exception=rest_framework.exceptions.APIException):
+            renderer = renderers.CVPDFRenderer()
+            renderer.render(fake_cv_content, cv_name='Invalid CV')
 
 
-
-class CustomerTestCase(unittest.TestCase):
+class ResumeSuggestionsTestCase(unittest.TestCase):
     pass
+
+
+

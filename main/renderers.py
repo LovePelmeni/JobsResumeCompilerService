@@ -1,5 +1,6 @@
 import rest_framework.exceptions
 from rest_framework import renderers
+import typing
 
 class RendererError(Exception):
 
@@ -8,7 +9,7 @@ class RendererError(Exception):
 
 class RendererMixin(object):
 
-    accepted_media_types = typing.Classvar[typing.List[str]] = \
+    accepted_media_types: typing.ClassVar[typing.List[str]] = \
    ('application/json', 'application/xml', 'text/plain', 'application/www-form-urlencoded')
 
     def __call__(self, *args, **kwargs):
@@ -55,3 +56,4 @@ class CVWordRenderer(RendererMixin, renderers.BaseRenderer):
         except(rest_framework.exceptions.APIException) as exception:
             logger.error('Word Renderer Exception: %s' % exception)
             raise rest_framework.exceptions.APIException()
+

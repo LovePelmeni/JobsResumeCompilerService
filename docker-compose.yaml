@@ -1,6 +1,6 @@
 version: "3.9"
-
 services:
+
   nginx_server:
     container_name: nginx_container
     image: nginx:latest
@@ -44,6 +44,9 @@ services:
       - global_jobs_app_network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/healthcheck/"]
+      retries: 5
+      interval: 10s
+      timeout: 10s
 
   graphql:
     container_name: graphql_container

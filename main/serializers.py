@@ -1,10 +1,11 @@
 from rest_framework import serializers
 from django.utils.translation import gettext_lazy as _
 from . import models
-from django.apps.registry import get_models
+import typing
+
+from django.apps import apps
 from django.core.serializers.json import DjangoJSONEncoder
 import django.core.exceptions, django.apps
-
 
 
 class HyperLinkedSlugRelatedTopicField(serializers.HyperlinkedModelSerializer):
@@ -23,7 +24,7 @@ class HyperLinkedSlugRelatedTopicField(serializers.HyperlinkedModelSerializer):
             updated_topics.append(topic)
         return updated_topics
 
-    def validated_data(self) -> typing.Dict[str, str]:
+    def validated_data(self) -> typing.Dict[str, typing.Any]:
         validated_data = {}
         topics = self.prepare_linked_topics(topics=self.initial_data['topics'])
         validated_data['topics'] = topics
@@ -32,10 +33,9 @@ class HyperLinkedSlugRelatedTopicField(serializers.HyperlinkedModelSerializer):
 
 class ModelMultipleChoiceField(serializers.MultipleChoiceField):
 
-    def __init__(self, **kwargs):
+    def __init__(self, model, **kwargs):
         super(ModelMultipleChoiceField, self).__init__(**kwargs)
-        self.model = (model for model in django.apps.apps.get_models() if
-            model.__class__.__name__ == kwargs.get('model'))[0].__class__.__name__
+        self.model = model
 
     def to_representation(self, value):
         return json.loads(value)
@@ -45,11 +45,12 @@ class ModelMultipleChoiceField(serializers.MultipleChoiceField):
         if not hasattr(data, '__iter__') or not all([isinstance(obj, dict) for obj in data]):
             raise django.core.exceptions.ValidationError(message='Invalid Internal Value.')
         try:
-            for element, value in data.items():
-                if element.startswith('id') and isinstance(value, int):
-                    obj = json.dumps(list(self.model.objects.get(id=value).values()),
-                    cls=DjangoJSONEncoder)
-                    converted_query.append(obj)
+            for obj in data:
+                for element, value in obj.items():
+                    if element.startswith('id') and isinstance(value, int):
+                        obj = json.dumps(list(self.model.objects.get(id=value).values()),
+                        cls=DjangoJSONEncoder)
+                        converted_query.append(obj)
 
             return json.dumps(converted_query)
         except(json.decoder.JSONDecodeError,):
@@ -60,8 +61,8 @@ class ModelMultipleChoiceField(serializers.MultipleChoiceField):
 class ResumeCreateSerializer(serializers.ModelSerializer):
 
     resume_name = serializers.CharField(label=_("Resume Name"), required=True)
-    topics = ModelMultipleChoiceField(label=_("Resume Name"), choices=models.Topic.objects.all())
-    rate = serializers.CharField(label=_("Resume Name"), choices=getattr(models, 'rate_choices'))
+    topics = ModelMultipleChoiceField(label=_("Resume Name"), choices=models.Topic.objects.all(), model=models.Topic)
+    rate = serializers.ChoiceField(label=_("Resume Name"), choices=getattr(models, 'rate_choices'))
 
     class Meta:
         model = models.Resume
@@ -105,10 +106,9 @@ class CustomerUpdateSerializer(CustomerSerializer):
         raise django.core.exceptions.ValidationError(message='Invalid Email')
 
 
-class TopicSerializer(serializers.HyperlinkedModelSerializer):
+
+class TopicSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Topic
         fields = '__all__'
-
-
