@@ -1,10 +1,23 @@
+import contextlib
+
 import django.db.models.manager
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+
 # Create your models here.
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.utils.deconstruct import deconstructible
 import typing
+import django.db.models
+
+
+
+
+class RoundValue(django.db.models.Func):
+    function = 'ROUND'
+    template = '%(function)s%((template)s, 2)'
+
+
 
 class HTMLContentValidator(django.core.validators.BaseValidator):
 
@@ -48,7 +61,7 @@ class CreditCardField(models.CharField):
         return super().validate(value, model_instance)
 
 
-class ResumeQueryset(django.db.models.QuerySet):
+class ResumeQueryset(models.QuerySet):
     pass
 
 class ResumeManager(django.db.models.manager.BaseManager.from_queryset(ResumeQueryset)):
@@ -66,6 +79,7 @@ class Topic(models.Model):
 
     def __str__(self):
         return self.name
+
 
 class Resume(models.Model):
 
@@ -90,9 +104,27 @@ class Resume(models.Model):
     def get_created_at(self):
         return self.created_at
 
+
+class CustomerQueryset(django.db.models.QuerySet):
+
+    def create_user(self, **kwargs):
+        user = self.model(**kwargs)
+        user.set_password(kwargs.get('password'))
+        return user
+
+    def create_admin(self, **kwargs):
+        user = self.create_user(**kwargs)
+        user.is_admin = True
+        user.save(using=self._db)
+        return user
+
+class CustomerManager(django.db.models.manager.BaseManager.from_queryset(CustomerQueryset)):
+    pass
+
+
 class Customer(AbstractBaseUser):
 
-    objects = BaseUserManager()
+    objects = CustomerManager()
 
     username = models.CharField(verbose_name=_("Username"), null=False, unique=True, editable=False, max_length=100)
     password = models.CharField(verbose_name=_("Password"), null=False, max_length=100)
@@ -122,8 +154,5 @@ class Customer(AbstractBaseUser):
     @property
     def get_created_at(self):
         return self.created_at
-
-
-
 
 

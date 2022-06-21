@@ -22,7 +22,12 @@ class ResumeGenericViewSet(viewsets.ModelViewSet):
     permission_classes = (rest_perms.IsAuthenticated,)
     authentication_classes = (authentication.JWTAuthenticationClass,)
     queryset = models.Resume.objects.all()
-    serializer_class = serializers.ResumeCreateSerializer
+
+    @decorators.action(methods=['get'], detail=False)
+    def get_creation_form(self, request):
+        form = forms.ResumeCreationForm()
+        return django.template.response.TemplateResponse(
+        request, 'main/create_resume.html', {'form': form})
 
     @transaction.atomic
     @decorators.action(methods=['post'], detail=False)
@@ -62,6 +67,7 @@ class UploadedCVAPIView(views.APIView):
         return (authentication.JWTAuthenticationClass,)
 
     @transaction.atomic
+    @csrf.csrf_exempt
     @django.utils.decorators.method_decorator(decorator=csrf.requires_csrf_token)
     def post(self, request):
         try:
@@ -73,8 +79,65 @@ class UploadedCVAPIView(views.APIView):
             raise NotImplementedError
 
 
-class CustomerAPIView(views.APIView):
-    pass
+class CustomerAPIView(viewsets.ModelViewSet):
+
+    serializer_class = serializers.CustomerSerializer
+
+    def handle_exception(self, exc):
+        from rest_framework import status
+
+        if isinstance(exc, django.core.exceptions.PermissionDenied):
+            return django.http.HttpResponse(status=status.HTTP_451_UNAVAILABLE_FOR_LEGAL_REASONS)
+
+        if isinstance(exc, django.core.exceptions.ValidationError):
+            return django.http.HttpResponseBadRequest()
+
+        if isinstance(exc, django.core.exceptions.ObjectDoesNotExist):
+            return django.http.HttpResponseNotFound()
+
+        if isinstance(exc, NotImplementedError):
+            return django.http.HttpResponseNotFound()
+
+
+    def check_permissions(self, request):
+        if request.get_signed_cookie('jwt-token') or 'Authorization' in request.META.keys():
+            raise django.core.exceptions.PermissionDenied()
+        return True
+
+
+    @transaction.atomic
+    @django.utils.decorators.method_decorator(decorator=csrf.requires_csrf_token)
+    def post(self, request):
+        import jwt
+        response = django.http.HttpResponse()
+        customer_serializer = serializers.CustomerSerializer(request.data, many=False)
+        if customer_serializer.is_valid(raise_exception=True):
+            try:
+                user = models.Customer.objects.create(**customer_serializer.validated_data)
+                response.set_signed_cookie('jwt-token', jwt.encode({'user_id': user.id},
+                algorithms='HS256', key=getattr(settings, 'SECRET_KEY')))
+            except(django.db.utils.IntegrityError,):
+                raise NotImplementedError
+
+        return response
+
+    @cache.cache_page(timeout=60 * 5)
+    @decorators.action(methods=['get'], detail=False, description='Returns Creation Customer Form')
+    def get_create_form(self, request):
+        form = forms.CustomerUpdateForm()
+        return django.template.response.TemplateResponse(request,
+        'main/create_customer.html', context={'form': form})
+
+    @cache.cache_control(private=True)
+    def get_update_form(self, request):
+        form = forms.CustomerUpdateForm()
+        customer = models.Customer.objects.get(
+        id=request.query_params.get('customer_id'))
+        form.initial = {element: getattr(customer, element) for
+        element in customer._meta.get_fields() if element.lower() in form.get_fields()}
+        return django.template.response.TemplateResponse(request,
+        'main/customer_update.html', context={'form': form})
+
 
 
 class CustomerResumesAPIView(viewsets.ModelViewSet):
@@ -173,18 +236,23 @@ class ResumesCatalogSuggestionsAPIView(viewsets.ModelViewSet):
     permission_classes = (rest_perms.IsAuthenticated,)
     queryset = models.Resume.objects.filter(private=False)
 
-    @cache.cache_control(timeout=60 * 5)
+    @cache.cache_control(timeout=60 * 5, private=True)
     def get_queryset(self, request):
         """
         / * QuerySet is consists of annotation that allows to get users friends that already liked that resumes.
         """
         from django.db import models as db_models
+        from .models import RoundValue
 
         customer = models.Customer.objects.get(id=request.query_params.get('customer_id'))
         return models.Place.objects.annotate(friends=db_models.Subquery(
         queryset=db_models.QuerySet(query=[customer for customer in
         customer.resumes.exclude(private=True) if
-        db_models.F('id') in customer.liked_resumes.values_list('resume_id', flat=True)])))
+        db_models.F('id') in customer.liked_resumes.values_list('resume_id', flat=True)]))).annotate(
+        total_resume_count='over '
+        '%s resumes has been published on this platform' % RoundValue(
+        db_models.Count(models.Resume.objects.all()))
+        )
 
 
     @decorators.action(methods=['get'], detail=False)
@@ -198,7 +266,4 @@ class ResumesCatalogSuggestionsAPIView(viewsets.ModelViewSet):
         return django.http.HttpResponse(status=status.HTTP_200_OK,
         content=json.dumps({'queryset': list(query.values())},
         cls=django.core.serializers.json.DjangoJSONEncoder))
-
-
-
 

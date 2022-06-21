@@ -13,11 +13,7 @@ services:
     networks:
       - global_jobs_app_network
     restart: unless-stopped
-    deploy:
-      replicas: 1
-      resources:
-        limits:
-          cpus: 20
+
 
   application:
     container_name: application_container
@@ -36,8 +32,6 @@ services:
     depends_on:
       - database
       - graphql
-    deploy:
-      replicas: 1
 
   database:
     container_name: database_container
@@ -55,8 +49,6 @@ services:
       retries: 5
       interval: 10s
       timeout: 10s
-    deploy:
-      replicas: 1
 
   graphql:
     container_name: graphql_container
@@ -74,8 +66,7 @@ services:
       timeout: 10s
     ports:
       - 5000:5000
-    deploy:
-      replicas: 1
+
 
 networks:
   global_jobs_app_network:
@@ -92,4 +83,6 @@ networks:
 
     name: global_jods_app_network
     internal: true
+
+
 

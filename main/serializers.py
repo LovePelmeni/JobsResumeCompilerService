@@ -111,3 +111,4 @@ class TopicSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Topic
         fields = '__all__'
+

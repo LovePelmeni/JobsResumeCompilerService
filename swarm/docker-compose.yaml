@@ -1,0 +1,66 @@
+version: "3.9"
+
+services:
+
+  nginx_server:
+    container_name: nginx_container
+    ports:
+      - target: 80
+      - published: 8002
+      - mode: host
+    image: nginx:latest
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    deploy:
+      update_config:
+        failure_action: rollback
+        parallelism: 1
+        delay: 10s
+      placement:
+        constraints:
+          - 'node.labels.TAG==jobs_resume_service'
+      mode: replicated
+      replicas: 1
+    depends_on:
+      - application
+
+  application:
+    container_name: application_server
+    image: crazycoderrr/jobs_resume_service_app
+    ports:
+      - published: 8000
+      - target: 8000
+      - mode: host
+    env_file: ./proj_env.env
+    deploy:
+      placement:
+        constraints:
+          - 'node.labels.TAG==jobs_resume_service'
+      update_config:
+        failure_action: rollback
+        delay: 10s
+        parallelism: 1
+      mode: global
+    healthcheck:
+      timeout: 10s
+      test: ["CMD", "curl", "-f", "http://localhost:8000/healthcheck/"]
+      interval: 10s
+      retries: 5
+    depends_on:
+      - database
+
+  database:
+    container_name: postgresql_database
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: jobs_db
+      POSTGRES_USER: jobs_user
+      POSTGRES_PASSWORD: Kirill
+    healthcheck:
+      test: ["CMD"]
+
+
+networks:
+  jobs_project_network:
+    external: true
+    name: jobs_project_network

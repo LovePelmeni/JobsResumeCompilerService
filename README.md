@@ -1,9 +1,16 @@
 # Jobs Resume Service. 
 
 ---
-### Docs Links: 
-* ### [OpenAPI Docs]("http://localhost:8000/swagger/)
-* ### [Redoc Docs]("http://localhost:8000/redoc/)
+### *Docs*: 
+
+#### API Swagger Docs Links: 
+* ###### [OpenAPI Docs]("http://localhost:8000/swagger/)
+* ##### [Redoc Docs]("http://localhost:8000/redoc/)
+
+#### API Docker-Swarm Deploy Guide Link:
+
+* #### [Deploying Project with Docker Swarm Docs]("https://github.com/LovePelmeni/blob/JobsResumeCompilerService/SWARM.md")
+
 
 ---
 # PROJECT IS CURRENTLY IN DEVELOPMENT PROCESS.
@@ -23,6 +30,7 @@ External Services: GraphQL
 
 
 ## Usage 
+    
 
 ## Production Mode 
 

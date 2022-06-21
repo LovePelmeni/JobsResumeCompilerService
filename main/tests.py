@@ -3,6 +3,48 @@ import unittest.mock
 # Create your tests here.
 
 
+
+class TestModels(unittest.TestCase):
+
+
+    def test_create(self, model, params):
+        model.objects.create(**params)
+        assert len(model.objects.all()) > 0
+
+    def test_update(self, model, params):
+        obj = model
+        new_obj = model.objects.update(**params)
+        assert obj.__dict__.items() != new_obj.__dict__.items()
+
+    def test_delete(self, model, obj):
+        initial_query = len(model.objects.all())
+        assert isinstance(obj, model.__class__)
+        obj.delete()
+        assert len(model.objects.all()) != initial_query
+
+
+def resumeSetUp():
+    pass
+
+def customerSetUp():
+    pass
+
+def topicSetUp():
+    pass
+
+
+unittest.FunctionTestCase(testFunc=TestModels.test_create, setUp=resumeSetUp)
+unittest.FunctionTestCase(testFunc=TestModels.test_update, setUp=resumeSetUp)
+unittest.FunctionTestCase(testFunc=TestModels.test_delete, setUp=resumeSetUp)
+
+unittest.FunctionTestCase(testFunc=TestModels.test_create, setUp=customerSetUp)
+unittest.FunctionTestCase(testFunc=TestModels.test_update, setUp=customerSetUp)
+unittest.FunctionTestCase(testFunc=TestModels.test_delete, setUp=customerSetUp)
+
+unittest.FunctionTestCase(testFunc=TestModels.test_create, setUp=topicSetUp)
+unittest.FunctionTestCase(testFunc=TestModels.test_update, setUp=topicSetUp)
+unittest.FunctionTestCase(testFunc=TestModels.test_delete, setUp=topicSetUp)
+
 class ResumeRendererTestCase(unittest.TestCase):
 
     def mocked_cv_content(self):
@@ -60,5 +102,3 @@ class TopicControllersTestCase(unittest.TestCase):
 
     def test_topic_delete(self):
         pass
-
-
