@@ -57,7 +57,48 @@ services:
       POSTGRES_USER: jobs_user
       POSTGRES_PASSWORD: Kirill
     healthcheck:
-      test: ["CMD"]
+      test: ["CMD", "pg_isready", "jobs_db"]
+      retries: 5
+      interval: 10s
+      timeout: 10s
+    ports:
+      - target: 5437
+      - published: 5437
+      - mode: host
+    deploy:
+      update_config:
+        failure_action: rollback
+        parallelism: 1
+        delay: 10s
+      mode: replicated
+      placement:
+        constraints:
+          - "node.labels.TAG==jobs_resume_service"
+      replicas: 1
+
+  graphql:
+    container_name: graphql_container
+    image: graphile/postgraphile
+    environment:
+      DATABASE_URL: postgres://jobs_user:Kirill@localhost:5437/jobs_db
+    command: ["postgraphile", "--connection", "$DATABASE_URL", "--host",
+    "0.0.0.0", "--port", "5001", "--schema", "public"]
+    ports:
+      - target: 5001
+      - published: 5001
+      - mode: host
+    healthcheck:
+      test: ["CMD", ""]
+      retries: 5
+      timeout: 10s
+      interval: 10s
+    deploy:
+      replicas: 1
+      mode: replicated
+      update_config:
+        failure_action: rollback
+        delay: 10s
+        parallelism: 1
 
 
 networks:
