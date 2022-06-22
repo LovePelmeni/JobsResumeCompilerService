@@ -16,18 +16,29 @@ from django.views.decorators import cache
 
 # Create your views here.
 
-
 class ResumeGenericViewSet(viewsets.ModelViewSet):
 
     permission_classes = (rest_perms.IsAuthenticated,)
     authentication_classes = (authentication.JWTAuthenticationClass,)
     queryset = models.Resume.objects.all()
+    server_exceptions = (NotImplementedError, NotImplemented,)
+
+    def handle_exception(self, exc):
+        return django.http.HttpResponse(status=status.HTTP_501_NOT_IMPLEMENTED) \
+        if exc in self.server_exceptions else django.http.HttpResponseBadRequest()
 
     @decorators.action(methods=['get'], detail=False)
+    @django.utils.decorators.method_decorator(decorator=cache.never_cache)
     def get_creation_form(self, request):
-        form = forms.ResumeCreationForm()
+        """
+        // * Allows to add some topics by specifying `extra_topics` query param. Type Integer
+        """
+        from . import forms
+        form = forms.ResumeCreationFormSet()
+        formset = forms.modelformset_factory(form=forms.TopicForm,
+        extra=request.query_params.get('extra_topics'))
         return django.template.response.TemplateResponse(
-        request, 'main/create_resume.html', {'form': form})
+        request, 'main/create_resume.html', {'formset': formset(), 'form': form})
 
     @transaction.atomic
     @decorators.action(methods=['post'], detail=False)
@@ -35,9 +46,21 @@ class ResumeGenericViewSet(viewsets.ModelViewSet):
         try:
             customer = models.Customer.objects.get(id=request.query_params.get('customer_id'))
             serializer = serializers.ResumeCreateSerializer(request.data, many=False)
+            for topic in request.data.get('topics'):
+
+                topic = serializers.TopicSerializer(topic, many=False)
+                if not topic.is_valid(raise_exception=True):
+                    raise django.core.exceptions.ValidationError(message='Invalid Data Topic.')
+
             if serializer.is_valid(raise_exception=True):
-                customer.resumes.create(**serializer.validated_data)
+                resume = customer.resumes.create(**serializer.validated_data)
+
+                topics = resume.topics.bulk_create([
+                topic for topic in request.data.get('topics')])
+
+                assert topics == len(request.data['topics'])
             return django.http.HttpResponse(status=200)
+
         except(django.db.utils.IntegrityError, django.core.exceptions.ObjectDoesNotExist,):
             raise NotImplementedError
 
@@ -245,7 +268,7 @@ class ResumesCatalogSuggestionsAPIView(viewsets.ModelViewSet):
         from .models import RoundValue
 
         customer = models.Customer.objects.get(id=request.query_params.get('customer_id'))
-        return models.Place.objects.annotate(friends=db_models.Subquery(
+        return models.Resume.objects.annotate(friends=db_models.Subquery(
         queryset=db_models.QuerySet(query=[customer for customer in
         customer.resumes.exclude(private=True) if
         db_models.F('id') in customer.liked_resumes.values_list('resume_id', flat=True)]))).annotate(

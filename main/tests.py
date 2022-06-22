@@ -102,3 +102,15 @@ class TopicControllersTestCase(unittest.TestCase):
 
     def test_topic_delete(self):
         pass
+
+class InvalidFormsetPayload(Exception):
+    pass
+
+class TestFormsetSubmitResumeCase(unittest.TestCase):
+
+    def mocked_formset_data(self):
+        return {}
+
+    @unittest.mock.patch('main.tests.TestFormsetSubmitResumeCase.test_formset_data', autospec=True)
+    def test_formset_data(self, mocked_event_data):
+        pass

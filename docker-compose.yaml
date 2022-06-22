@@ -14,7 +14,6 @@ services:
       - global_jobs_app_network
     restart: unless-stopped
 
-
   application:
     container_name: application_container
     build: ./project/.
@@ -65,7 +64,9 @@ services:
       interval: 10s
       timeout: 10s
     ports:
-      - 5000:5000
+      - target: 5001
+      - published: 5001
+      - mode: host
 
 
 networks:

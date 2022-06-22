@@ -100,7 +100,6 @@ services:
         delay: 10s
         parallelism: 1
 
-
 networks:
   jobs_project_network:
     external: true
