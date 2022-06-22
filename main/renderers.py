@@ -32,10 +32,7 @@ class CVPDFRenderer(RendererMixin, renderers.BaseRenderer):
     accepted_media_types = ()
 
     def render_to_pdf(self, content: str, cv_name: str) -> typing.Type['TextIO']:
-        with open('%s.pdf' % cv_name) as pdf_cv_file:
-            pdf_cv_file.write(content)
-        pdf_cv_file.close()
-        return pdf_cv_file
+        pass
 
     def render(self, data, cv_name: str, accepted_media_type=None, renderer_context=None):
         try:

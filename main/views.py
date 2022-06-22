@@ -127,10 +127,39 @@ class CustomerAPIView(viewsets.ModelViewSet):
             raise django.core.exceptions.PermissionDenied()
         return True
 
+    @decorators.action(methods=['put'], detail=False)
+    def update(self, request, *args, **kwargs):
+        try:
+            customer = models.Customer.objects.get(
+            id=request.query_params.get('customer_id'))
+            serializer = serializers.CustomerUpdateSerializer(data=request.data, many=False)
+            for element, value in serializer.validated_data.items():
+                setattr(customer, element, value)
+
+            customer.save()
+            return django.http.HttpResponse(status=200)
+        except(django.core.exceptions.ObjectDoesNotExist,):
+            return django.http.HttpResponseNotFound
+
+    @decorators.action(methods=['delete'], detail=False)
+    def destroy(self, request, *args, **kwargs):
+        try:
+            response = django.http.HttpResponse()
+            models.Customer.objects.get(
+            id=request.query_params.get('customer_id')).first().delete()
+            if 'jwt-token' in request.COOKIES.keys():
+                response.delete_cookie('jwt-token')
+            return response
+        except(django.core.exceptions.ObjectDoesNotExist,):
+            return django.http.HttpResponseNotFound()
+
+        except(KeyError, AttributeError, TypeError) as exception:
+            logger.error('%s' % exception)
+
 
     @transaction.atomic
     @django.utils.decorators.method_decorator(decorator=csrf.requires_csrf_token)
-    def post(self, request):
+    def create(self, request):
         import jwt
         response = django.http.HttpResponse()
         customer_serializer = serializers.CustomerSerializer(request.data, many=False)
@@ -277,7 +306,6 @@ class ResumesCatalogSuggestionsAPIView(viewsets.ModelViewSet):
         db_models.Count(models.Resume.objects.all()))
         )
 
-
     @decorators.action(methods=['get'], detail=False)
     def retrieve(self, request, *args, **kwargs):
         query = self.get_queryset(request).filter(id=request.query_params.get('resume_id')).values()
@@ -289,4 +317,3 @@ class ResumesCatalogSuggestionsAPIView(viewsets.ModelViewSet):
         return django.http.HttpResponse(status=status.HTTP_200_OK,
         content=json.dumps({'queryset': list(query.values())},
         cls=django.core.serializers.json.DjangoJSONEncoder))
-

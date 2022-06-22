@@ -155,22 +155,5 @@ class Customer(AbstractBaseUser):
     def get_created_at(self):
         return self.created_at
 
-class SingletonPattern(object):
 
-    _instance = None
 
-    def __new__(cls, *args, **kwargs):
-        if not isinstance(cls._instance, cls):
-            _instance = super().__new__(**kwargs)
-        _instance = cls._instance
-        return _instance
-
-class EmailSubscription(SingletonPattern, models.Model):
-
-    objects = models.Manager()
-
-    customers = models.ForeignKey(to=Customer,
-    on_delete=models.CASCADE)
-
-    def get_subscribers_emails(self):
-        return [user.email for user in self.users.all()]

@@ -22,7 +22,9 @@ resume_urlpatterns = [
 
 customer_urlpatterns = [
 
-    path('customer/', views.CustomerAPIView.as_view()),
+    path('customer/create/', views.CustomerAPIView.as_view({'post': 'create'})),
+    path('customer/update/', views.CustomerAPIView.as_view({'put': 'update'})),
+    path('customer/delete/', views.CustomerAPIView.as_view({'delete': 'destroy'}))
 
 ]
 
@@ -57,8 +59,6 @@ urlpatterns += resume_urlpatterns
 urlpatterns += openapi_urlpatterns
 urlpatterns += customer_urlpatterns
 urlpatterns += topic_urlpatterns
-
-
 
 
 

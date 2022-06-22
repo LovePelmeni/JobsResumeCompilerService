@@ -30,7 +30,6 @@ External Services: GraphQL
 
 
 ## Usage 
-    
 
 ## Production Mode 
 

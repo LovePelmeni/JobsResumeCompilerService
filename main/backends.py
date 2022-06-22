@@ -6,4 +6,3 @@ class UserAuthorizationBackend(backends.BaseBackend):
     def authenticate(self, username=None, password=None):
         pass
 
-

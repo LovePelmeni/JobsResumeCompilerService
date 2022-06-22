@@ -31,3 +31,4 @@ class TopicForm(forms.ModelForm):
     class Meta:
         model = models.Topic
         fields = ('name', 'description',)
+
