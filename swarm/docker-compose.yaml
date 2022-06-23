@@ -88,7 +88,7 @@ services:
       - published: 5001
       - mode: host
     healthcheck:
-      test: ["CMD", ""]
+      test: ["CMD", "curl", "-f", "http://localhost:5000/healthcheck/"]
       retries: 5
       timeout: 10s
       interval: 10s
@@ -99,6 +99,9 @@ services:
         failure_action: rollback
         delay: 10s
         parallelism: 1
+      placement:
+        constraints:
+          - "node.labels.TAG==jobs_resume_service"
 
 networks:
   jobs_project_network:

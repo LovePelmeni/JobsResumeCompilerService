@@ -31,7 +31,7 @@ class CVPDFRenderer(RendererMixin, renderers.BaseRenderer):
 
     accepted_media_types = ()
 
-    def render_to_pdf(self, content: str, cv_name: str) -> typing.Type['TextIO']:
+    def render_to_pdf(self, content: str, cv_name: str) -> typing.Union[RendererError, bytes]:
         pass
 
     def render(self, data, cv_name: str, accepted_media_type=None, renderer_context=None):
@@ -47,7 +47,7 @@ class CVWordRenderer(RendererMixin, renderers.BaseRenderer):
 
     accepted_media_types = ()
 
-    def render_to_word_document(self, content: str):
+    def render_to_word_document(self, content: str) -> typing.Union[RendererError, bytes]:
         pass
 
     def render(self, data, cv_name: str, accepted_media_type=None, renderer_context=None):
@@ -57,5 +57,3 @@ class CVWordRenderer(RendererMixin, renderers.BaseRenderer):
         except(rest_framework.exceptions.APIException) as exception:
             logger.error('Word Renderer Exception: %s' % exception)
             raise rest_framework.exceptions.APIException()
-
-

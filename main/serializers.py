@@ -18,7 +18,7 @@ class HyperLinkedSlugRelatedTopicField(serializers.HyperlinkedModelSerializer):
 
     def prepare_linked_topics(self, topics):
         updated_topics = []
-        topic_url = 'http://' + settings.APPLICATION_HOST + 'topic/retrieve/?topic_id=%s'
+        topic_url = 'http://' + settings.APPLICATION_HOST + 'get/topic/?topic_id=%s'
         for topic in topics:
             topic.id = topic_url % topic.id
             updated_topics.append(topic)

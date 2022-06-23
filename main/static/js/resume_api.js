@@ -26,3 +26,32 @@ function DeleteResumeView(resume_id){
     SendRequest('DELETE', null, {'resume_id': resume_id},
     'http://localhost:8000/delete/resume/');
 }
+
+
+function getFormattedResumeView(request_url, resume_content){
+       var url = new URL("http://localhost:8000/get/pdf/resume/");
+   $.ajax({
+        url: url,
+        data: resume_content,
+        headers: {'Content-Type': 'application/json'},
+        type: "POST",
+        success: function(response){
+            console.log('responded with success, ', response);
+            return response
+        },
+        error: function(error){
+            console.log('responded with exception: ' + error);
+        }
+   });
+}
+function getPDFResumeView(resume_content){
+   var request_url = new URL("http://localhost:8000/get/pdf/resume/");
+   var pdf_file = getFormattedResumeView(request_url, resume_content);
+   return pdf_file;
+}
+
+function GetWordResumeView(resume_content){
+   var request_url = new URL("http://localhost:8000/get/pdf/resume/");
+   var word_file = getFormattedResumeView(request_url, resume_content);
+   return word_file;
+}

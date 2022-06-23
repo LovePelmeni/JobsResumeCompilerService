@@ -45,13 +45,16 @@ unittest.FunctionTestCase(testFunc=TestModels.test_create, setUp=topicSetUp)
 unittest.FunctionTestCase(testFunc=TestModels.test_update, setUp=topicSetUp)
 unittest.FunctionTestCase(testFunc=TestModels.test_delete, setUp=topicSetUp)
 
-class ResumeRendererTestCase(unittest.TestCase):
+
+class BaseRendererMockTestContentMixin(object):
 
     def mocked_cv_content(self):
         return """<body><h1>Correct Content</h1></body>"""
 
     def mocked_fake_cv_content(self):
         return """Invalid CV Content File"""
+
+class ResumePDFRendererTestCase(BaseRendererMockTestContentMixin, unittest.TestCase):
 
     @unittest.mock.patch('main.tests.ResumeRendererTestCase.mocked_cv_content')
     def test_render_to_pdf(self, mocked_cv_content):
@@ -63,10 +66,30 @@ class ResumeRendererTestCase(unittest.TestCase):
 
     @unittest.mock.patch('main.tests.ResumeRendererTestCase.mocked_fake_cv_content')
     def test_render_to_pdf_fail(self, fake_cv_content):
-        from . import renderers
+        from API.main import renderers
         with self.assertRaises(expected_exception=rest_framework.exceptions.APIException):
             renderer = renderers.CVPDFRenderer()
             renderer.render(fake_cv_content, cv_name='Invalid CV')
+
+
+class ResumeWordRendererTestCase(BaseRendererMockTestContentMixin, unittest.TestCase):
+
+    @unittest.mock.patch('main.tests.test_renderers.ResumeWordRendererTestCase.mocked_cv_content')
+    def test_render_to_word(self, mocked_cv_content):
+        from API.main import renderers
+        renderer = renderers.CVWordRenderer()
+        word_resume_file = renderer.render(data=mocked_cv_content,
+        accepted_media_type='application/html', cv_name='Test CV Name')
+        self.assertIsNotNone(word_resume_file)
+
+    @unittest.mock.patch('main.tests.test_renderers.ResumeWordRendererTestCase.mocked_fake_cv_content')
+    def test_fail_render_to_word(self, mocked_fake_cv_content):
+        from API.main import renderers
+        with self.assertRaises(expected_exception=renderers.RendererError):
+            renderer = renderers.CVWordRenderer()
+            word_resume_file = renderer.render(data=mocked_fake_cv_content,
+            accepted_media_type='application/html', cv_name='Test CV Name')
+            self.assertIsInstance(word_resume_file, Exception)
 
 
 class ResumeSuggestionsTestCase(unittest.TestCase):
@@ -114,3 +137,6 @@ class TestFormsetSubmitResumeCase(unittest.TestCase):
     @unittest.mock.patch('main.tests.TestFormsetSubmitResumeCase.test_formset_data', autospec=True)
     def test_formset_data(self, mocked_event_data):
         pass
+
+
+

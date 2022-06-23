@@ -29,6 +29,14 @@ DEBUG = True
 ALLOWED_HOSTS = ["*"]
 
 
+AUTHENTICATION_BACKENDS = [
+
+    "main.backends.UserAuthorizationBackend",
+    "main.backends.AdminAuthorizationBackend",
+    "django.contrib.auth.backends.models.ModelBackend"
+
+]
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -93,8 +101,6 @@ AUTH_USER_MODEL = 'main.Customer'
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
-APPLICATION_HOST = 'application'
-
 
 if DEBUG:
 
@@ -109,6 +115,8 @@ if DEBUG:
             'PORT': 5434
         }
     }
+    APPLICATION_HOST = 'localhost'
+
 else:
 
     CORS_ALLOWED_ORIGINS = [
@@ -139,6 +147,7 @@ else:
             'PORT': os.environ.get('POSTGRES_PORT')
         }
     }
+    APPLICATION_HOST = os.environ.get("APPLICATION_HOST")
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators

@@ -76,8 +76,33 @@ class ResumeGenericViewSet(viewsets.ModelViewSet):
         except(django.db.utils.IntegrityError, django.db.utils.DataError):
             raise NotImplementedError
 
+class UploadWordCVAPIView(views.APIView):
 
-class UploadedCVAPIView(views.APIView):
+    content_negotiation_class = (negotiation.CVNegotiationContentClass,)
+    renderer_classes = (renderers.CVWordRenderer,)
+
+    def get_permissions(self):
+        return (rest_perms.IsAuthenticated,)
+
+    def get_authenticators(self):
+        return (authentication.JWTAuthenticationClass,)
+
+    def handle_exception(self, exc):
+        if isinstance(exc, django.core.exceptions.BadRequest):
+            return django.http.HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+        return django.http.HttpResponse(status=status.HTTP_501_NOT_IMPLEMENTED)
+
+    @django.utils.decorators.method_decorator(csrf.requires_csrf_token)
+    def post(self, request) -> typing.Union[django.http.FileResponse, django.http.StreamingHttpResponse]:
+        try:
+            content = cv.CVContent(**request.data)
+            return django.http.FileResponse(
+            request.accepted_renderer.render(content))
+        except(renderers.RendererError, django.core.exceptions.ValidationError):
+            raise django.core.exceptions.BadRequest
+
+
+class UploadPDFCVAPIView(views.APIView):
 
     renderer_classes = (renderers.CVPDFRenderer,)
     permission_classes = (rest_perms.IsAuthenticated,)
@@ -170,7 +195,6 @@ class CustomerAPIView(viewsets.ModelViewSet):
                 algorithms='HS256', key=getattr(settings, 'SECRET_KEY')))
             except(django.db.utils.IntegrityError,):
                 raise NotImplementedError
-
         return response
 
     @cache.cache_page(timeout=60 * 5)
@@ -317,3 +341,9 @@ class ResumesCatalogSuggestionsAPIView(viewsets.ModelViewSet):
         return django.http.HttpResponse(status=status.HTTP_200_OK,
         content=json.dumps({'queryset': list(query.values())},
         cls=django.core.serializers.json.DjangoJSONEncoder))
+
+
+
+
+
+

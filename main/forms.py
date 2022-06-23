@@ -20,13 +20,13 @@ class CustomerUpdateForm(CustomerForm):
 
 class ResumeCreationFormSet(forms.BaseModelFormSet):
 
-    resume = forms.CharField(label='Resume Name',
+    resume = forms.CharField(label=_('Resume Name'),
     widget=forms.TextInput, required=True)
 
 class TopicForm(forms.ModelForm):
 
-    name = forms.CharField(label='Topic Name', required=True)
-    description = forms.CharField(label='Description', required=True, widget=forms.Textarea)
+    name = forms.CharField(label=_('Topic Name'), required=True)
+    description = forms.CharField(label=_('Description'), required=True, widget=forms.Textarea)
 
     class Meta:
         model = models.Topic

@@ -12,11 +12,14 @@ resume_urlpatterns = [
     path('resume/list/', views.ResumeGenericViewSet.as_view({'get': 'list'})),
     path('resume/retrieve/', views.ResumeGenericViewSet.as_view({'get': 'retrieve'})),
 
+    path('resume/render/to/pdf/', views.UploadPDFCVAPIView.as_view()),
+    path('resume/render/to/word/', views.UploadWordCVAPIView.as_view()),
+
     path('resume/create/', views.ResumeGenericViewSet.as_view({'post': 'create'})),
     path('resume/delete/', views.ResumeGenericViewSet.as_view({'delete': 'destroy'})),
 
     path('customer/resumes/list/', views.CustomerResumesAPIView.as_view({'get': 'list'})),
-    path('customer/resumes/retrieve/', views.CustomerResumesAPIView.as_view({'get': 'retrieve'}))
+    path('customer/resumes/retrieve/', views.CustomerResumesAPIView.as_view({'get': 'retrieve'})),
 
 ]
 
@@ -59,6 +62,3 @@ urlpatterns += resume_urlpatterns
 urlpatterns += openapi_urlpatterns
 urlpatterns += customer_urlpatterns
 urlpatterns += topic_urlpatterns
-
-
-
