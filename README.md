@@ -12,8 +12,31 @@
 * #### [Deploying Project with Docker Swarm Docs]("https://github.com/LovePelmeni/blob/JobsResumeCompilerService/SWARM.md")
 
 
+## Requirements 
+
 ---
-# PROJECT IS CURRENTLY IN DEVELOPMENT PROCESS.
+
+#### For Production Environment
+
+~ `Docker` - `1.3.8` *or higher*
+
+~ `Docker-Compose` - `3.8` *or higher*
+
+#### For Local Development
+
+~ `Python` - `3.8` *or higher*
+
+~ `Django` - `3.2` *or lower*
+
+~ `Docker` - `1.3.8` *or higher*
+
+~ `Docker-Compose` - `3.8` *or higher*
+
+~ `PostgresSQL` - `13.3` *recommended* 
+
+
+---
+# PROJECT IS CURRENTLY IN DEVELOPMENT PROCESS. AND Docs Updates Not Really Frequently, but as new feature creates.
 
 ---
 #### Goal of the Project: 

@@ -343,7 +343,47 @@ class ResumesCatalogSuggestionsAPIView(viewsets.ModelViewSet):
         cls=django.core.serializers.json.DjangoJSONEncoder))
 
 
+class ReviewResumeAPIView(viewsets.ModelViewSet):
 
+    def __init__(self):
+        super(ReviewResumeAPIView, self).__init__()
+        from .review import reviewer
+        self.reviewer = reviewer.ResumeReviewer
 
+    def get_serializer_class(self):
 
+        if self.action == 'list':
+            return serializers.ReviewListIssueSerializer
 
+        if self.action == 'retrieve':
+            return serializers.ReviewSingleIssueSerializer
+
+    def get_authenticators(self):
+        return (authentication.JWTAuthenticationClass,)
+
+    def get_permissions(self):
+        return (rest_perms.IsAuthenticated,)
+
+    @decorators.action(methods=['post'], detail=False)
+    def create(self, request, *args, **kwargs):
+        resume = cv.RawResumeContent(request.data)
+        issues = self.get_serializer_class()(self.reviewer(resume=resume).review()).data
+        return django.http.HttpResponse(status=status.HTTP_200_OK,
+        content=issues)
+
+    @decorators.action(methods=['get'], detail=False,
+    description='Returns Extended info about issue Occurred while resume reviewing.')
+    def retrieve(self, request, *args, **kwargs):
+
+        issue = """"""
+        serialized_issue = self.get_serializer_class()(issue).data
+        return django.http.HttpResponse(status=status.HTTP_200_OK,
+        content=serialized_issue)
+
+    @decorators.action(methods=['get'], detail=False,
+    description='Returns List of Resume Issues Occurred while resume reviewing.')
+    def list(self, request, *args, **kwargs):
+        issues = """"""
+        serialized_issues = self.get_serializer_class()(issues, many=True).data
+        return django.http.HttpResponse(status=status.HTTP_200_OK,
+        content=serialized_issues)

@@ -23,6 +23,8 @@ services:
       replicas: 1
     depends_on:
       - application
+    networks:
+      - jobs_project_network
 
   application:
     container_name: application_server
@@ -31,7 +33,7 @@ services:
       - published: 8000
       - target: 8000
       - mode: host
-    env_file: ./proj_env.env
+    env_file: proj_env.env
     deploy:
       placement:
         constraints:
@@ -48,6 +50,8 @@ services:
       retries: 5
     depends_on:
       - database
+    networks:
+      - jobs_project_network
 
   database:
     container_name: postgresql_database
@@ -56,11 +60,6 @@ services:
       POSTGRES_DB: jobs_db
       POSTGRES_USER: jobs_user
       POSTGRES_PASSWORD: Kirill
-    healthcheck:
-      test: ["CMD", "pg_isready", "jobs_db"]
-      retries: 5
-      interval: 10s
-      timeout: 10s
     ports:
       - target: 5437
       - published: 5437
@@ -75,13 +74,13 @@ services:
         constraints:
           - "node.labels.TAG==jobs_resume_service"
       replicas: 1
+    networks:
+      - jobs_project_network
 
   graphql:
     container_name: graphql_container
     image: graphile/postgraphile
-    environment:
-      DATABASE_URL: postgres://jobs_user:Kirill@localhost:5437/jobs_db
-    command: ["postgraphile", "--connection", "$DATABASE_URL", "--host",
+    command: ["postgraphile", "--connection", "postgres://jobs_user:Kirill@localhost:5437/jobs_db", "--host",
     "0.0.0.0", "--port", "5001", "--schema", "public"]
     ports:
       - target: 5001
@@ -102,6 +101,8 @@ services:
       placement:
         constraints:
           - "node.labels.TAG==jobs_resume_service"
+    networks:
+      - jobs_project_network
 
 networks:
   jobs_project_network:
