@@ -1,6 +1,6 @@
 import contextlib
 
-import rest_framework.exceptions
+import rest_framework.exceptions, typing
 from django.shortcuts import render
 
 from rest_framework import views, viewsets, permissions as rest_perms, decorators
@@ -12,8 +12,9 @@ from django.views.decorators import csrf
 from . import models
 from django.db import transaction
 from django.views.decorators import cache
+import logging
 
-
+logger = logging.getLogger(__name__)
 # Create your views here.
 
 class ResumeGenericViewSet(viewsets.ModelViewSet):
@@ -100,6 +101,7 @@ class UploadWordCVAPIView(views.APIView):
             request.accepted_renderer.render(content))
         except(renderers.RendererError, django.core.exceptions.ValidationError):
             raise django.core.exceptions.BadRequest
+
 
 
 class UploadPDFCVAPIView(views.APIView):
@@ -213,7 +215,6 @@ class CustomerAPIView(viewsets.ModelViewSet):
         element in customer._meta.get_fields() if element.lower() in form.get_fields()}
         return django.template.response.TemplateResponse(request,
         'main/customer_update.html', context={'form': form})
-
 
 
 class CustomerResumesAPIView(viewsets.ModelViewSet):
@@ -345,18 +346,14 @@ class ResumesCatalogSuggestionsAPIView(viewsets.ModelViewSet):
 
 class ReviewResumeAPIView(viewsets.ModelViewSet):
 
+    serializer_class = serializers.ReviewListIssueSerializer
+    permission_classes = (permissions.IsResumeOwner,)
+    renderer_classes = (renderers.CVPDFRenderer,)
+
     def __init__(self):
         super(ReviewResumeAPIView, self).__init__()
         from .review import reviewer
         self.reviewer = reviewer.ResumeReviewer
-
-    def get_serializer_class(self):
-
-        if self.action == 'list':
-            return serializers.ReviewListIssueSerializer
-
-        if self.action == 'retrieve':
-            return serializers.ReviewSingleIssueSerializer
 
     def get_authenticators(self):
         return (authentication.JWTAuthenticationClass,)
@@ -364,26 +361,14 @@ class ReviewResumeAPIView(viewsets.ModelViewSet):
     def get_permissions(self):
         return (rest_perms.IsAuthenticated,)
 
-    @decorators.action(methods=['post'], detail=False)
+    @decorators.action(methods=['post'], detail=False, description='Reviews Resume and return '
+    'different issues related to correctness logic and consistency of the one.')
+    @django.utils.decorators.method_decorator(decorator=cache.never_cache)
     def create(self, request, *args, **kwargs):
         resume = cv.RawResumeContent(request.data)
         issues = self.get_serializer_class()(self.reviewer(resume=resume).review()).data
         return django.http.HttpResponse(status=status.HTTP_200_OK,
         content=issues)
 
-    @decorators.action(methods=['get'], detail=False,
-    description='Returns Extended info about issue Occurred while resume reviewing.')
-    def retrieve(self, request, *args, **kwargs):
 
-        issue = """"""
-        serialized_issue = self.get_serializer_class()(issue).data
-        return django.http.HttpResponse(status=status.HTTP_200_OK,
-        content=serialized_issue)
 
-    @decorators.action(methods=['get'], detail=False,
-    description='Returns List of Resume Issues Occurred while resume reviewing.')
-    def list(self, request, *args, **kwargs):
-        issues = """"""
-        serialized_issues = self.get_serializer_class()(issues, many=True).data
-        return django.http.HttpResponse(status=status.HTTP_200_OK,
-        content=serialized_issues)

@@ -119,6 +119,7 @@ if DEBUG:
 
 else:
 
+    APPLICATION_HOST = os.environ.get('APPLICATION_HOST')
     CORS_ALLOWED_ORIGINS = [
         'http://%s:8000' % APPLICATION_HOST
     ]
@@ -147,7 +148,6 @@ else:
             'PORT': os.environ.get('POSTGRES_PORT')
         }
     }
-    APPLICATION_HOST = os.environ.get("APPLICATION_HOST")
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators

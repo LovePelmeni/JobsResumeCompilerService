@@ -14,6 +14,7 @@ class ResumeParser(abc.ABC):
         // * Parses whole resume basically returns methods
         `parse_topics` and `parse_title` and merge the context.
         """
+
     @abc.abstractmethod
     def parse_topics(self) -> typing.List[typing.Dict[str, typing.Any]]:
         """
@@ -25,7 +26,7 @@ class ResumeParser(abc.ABC):
         // * Parses Resume Title
         """
 
-class ResumeReviewer(abc.ABC):
+class BaseReviewer(abc.ABC):
 
     def __init__(self, resume):
         self.resume_parser = ResumeParser(resume)
@@ -39,3 +40,20 @@ class ResumeReviewer(abc.ABC):
         `Implements the interface of the reviewer,
         review the resume using Specific AI written in TensorFlow (python).
         """
+
+class ResumeReviewer(BaseReviewer):
+
+    def __init__(self, resume: typing.Dict[str, typing.Any]):
+        self.resume = resume
+        super(BaseReviewer, self).__init__(resume)
+
+    def review(self):
+        import requests
+        try:
+            response = requests.post('http://%s:8006/validate/resume/',
+            data={'resume': self.resume}, timeout=10)
+            if 'errors' in json.loads(response.text).keys():
+                return response.json()
+            return None
+        except(requests.exceptions.Timeout):
+            raise TimeoutError()

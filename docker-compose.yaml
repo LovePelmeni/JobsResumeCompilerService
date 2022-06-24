@@ -2,7 +2,7 @@ version: "3.9"
 services:
 
   nginx_server:
-    container_name: nginx_container
+    container_name: nginx_jobs_project_container
     image: nginx:latest
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
@@ -25,7 +25,6 @@ services:
       timeout: 10s
       interval: 10s
     env_file: ./project/env_file.env
-    platform: linux/amd64
     networks:
       - global_jobs_app_network
     depends_on:
@@ -41,6 +40,8 @@ services:
       POSTGRES_PASSWORD: Kirill
     ports:
       - 5436:5436
+    command:
+      - -p 5436
     networks:
       - global_jobs_app_network
     healthcheck:
@@ -64,26 +65,27 @@ services:
       interval: 10s
       timeout: 10s
     ports:
-      - target: 5001
-      - published: 5001
-      - mode: host
+      - "5001:5001"
 
 
 networks:
   global_jobs_app_network:
-    external: false
-    enable_ipv6: true
-    driver: bridge
-    driver_opts:
-      com.docker.network.enable_ipv6: "true"
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.28.0.1/20
-          gateway: 172.28.0.2
-
-    name: global_jods_app_network
-    internal: true
+    external: true
+    name: global_jobs_app_network
+#  global_jobs_app_network:
+#    external: false
+#    enable_ipv6: true
+#    driver: bridge
+#    driver_opts:
+#      com.docker.network.enable_ipv6: "true"
+#    ipam:
+#      driver: default
+#      config:
+#        - subnet: 172.28.0.1/20
+#          gateway: 172.28.0.2
+#
+#    name: global_jods_app_network
+#    internal: true
 
 
 

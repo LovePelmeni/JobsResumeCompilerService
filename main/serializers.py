@@ -112,3 +112,13 @@ class TopicSerializer(serializers.ModelSerializer):
         model = models.Topic
         fields = '__all__'
 
+
+class ReviewListIssueSerializer(serializers.Serializer):
+
+    issue_name = serializers.CharField(label=_("Issue Name"), allow_null=False)
+    issue_description = serializers.CharField(label=_("Description"), allow_null=False)
+    example = serializers.CharField(label=_("Example"), allow_null=False)
+
+    def to_json(self):
+        return json.dumps(self.data)
+

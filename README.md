@@ -57,3 +57,15 @@ External Services: GraphQL
 ## Production Mode 
 
 ## Local Development Mode 
+
+
+---
+
+### External Links
+
+*You Can Find Me in Social Media*
+
+~ `GitHUB` http://github.com/LovePelmeni
+
+~ `LinkedIn` Email: klimkiruk@gmail.com
+
